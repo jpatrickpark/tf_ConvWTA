@@ -27,7 +27,7 @@ Usage :
   ae.save(save_path)
   ae.restore(save_path)
 
-Reference: 
+Reference:
   [1] https://arxiv.org/pdf/1409.2752.pdf
 """
 
@@ -47,7 +47,7 @@ class ConvWTA(object):
       tf.GraphKeys.TRAINABLE_VARIABLES, scope=self.name)
     self.sess.run(tf.variables_initializer(self.t_vars))
     self.saver = tf.train.Saver(self.t_vars)
-      
+
   def encoder(self, x):
     with tf.variable_scope(self.name) as vs:
       h = self._conv(x, self.size[1], 5, 5, 1, 1, "conv_1")
@@ -57,9 +57,9 @@ class ConvWTA(object):
 
   def _decoder(self, h):
     shape = tf.shape(h)
-    out_shape = tf.pack([shape[0], shape[1], shape[2], 1])
+    out_shape = tf.stack([shape[0], shape[1], shape[2], 1])
     with tf.variable_scope(self.name) as vs:
-      y = self._deconv(h, out_shape, self.size[0], 
+      y = self._deconv(h, out_shape, self.size[0],
                        11, 11, 1, 1, "deconv", end=True)
     return y
 
@@ -76,7 +76,7 @@ class ConvWTA(object):
     h, _ = self._spatial_sparsity(h)
     y = self._decoder(h)
     return y
-    
+
   def _set_variables(self):
     with tf.variable_scope(self.name) as vs:
       self._conv_var(self.size[0], self.size[1],  5,  5, "conv_1")
@@ -84,7 +84,7 @@ class ConvWTA(object):
       self._conv_var(self.size[2], self.size[3],  5,  5, "conv_3")
       self.f, _ = self._deconv_var(
         self.size[-1], self.size[0], 11, 11, "deconv")
-    
+
   def _conv_var(self, in_dim, out_dim, k_h, k_w, name, stddev=0.1):
     with tf.variable_scope(name) as vs:
       k = tf.get_variable('filter',
@@ -103,7 +103,7 @@ class ConvWTA(object):
         initializer=tf.constant_initializer(0.0001))
     return k, b
 
-  def _conv(self, x, out_dim, 
+  def _conv(self, x, out_dim,
             k_h, k_w, s_h, s_w, name, end=False):
     with tf.variable_scope(name, reuse=True) as vs:
       k = tf.get_variable('filter')
@@ -126,16 +126,16 @@ class ConvWTA(object):
     c = shape[3]
 
     h_t = tf.transpose(h, [0, 3, 1, 2]) # n, c, h, w
-    h_r = tf.reshape(h_t, tf.pack([n, c, -1])) # n, c, h*w
+    h_r = tf.reshape(h_t, tf.stack([n, c, -1])) # n, c, h*w
 
     th, _ = tf.nn.top_k(h_r, 1) # n, c, 1
-    th_r = tf.reshape(th, tf.pack([n, 1, 1, c])) # n, 1, 1, c
-    drop = tf.select(h < th_r, 
+    th_r = tf.reshape(th, tf.stack([n, 1, 1, c])) # n, 1, 1, c
+    drop = tf.where(h < th_r,
       tf.zeros(shape, tf.float32), tf.ones(shape, tf.float32))
 
     # spatially dropped & winner
-    return h*drop, tf.reshape(th, tf.pack([n, c])) # n, c
-    
+    return h*drop, tf.reshape(th, tf.stack([n, c])) # n, c
+
   def _lifetime_sparsity(self, h, winner, rate):
     shape = tf.shape(winner)
     n = shape[0]
@@ -145,15 +145,15 @@ class ConvWTA(object):
     winner = tf.transpose(winner) # c, n
     th_k, _ = tf.nn.top_k(winner, k) # c, k
 
-    shape_t = tf.pack([c, n])
-    drop = tf.select(winner < th_k[:,k-1:k], # c, n
+    shape_t = tf.stack([c, n])
+    drop = tf.where(winner < th_k[:,k-1:k], # c, n
       tf.zeros(shape_t, tf.float32), tf.ones(shape_t, tf.float32))
     drop = tf.transpose(drop) # n, c
-    return h * tf.reshape(drop, tf.pack([n, 1, 1, c]))
+    return h * tf.reshape(drop, tf.stack([n, 1, 1, c]))
 
-  def features(self): 
+  def features(self):
     return self.sess.run(self.f)
-    
+
   def save(self, ckpt_path):
     self.saver.save(self.sess, ckpt_path)
 
