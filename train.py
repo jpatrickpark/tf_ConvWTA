@@ -5,7 +5,7 @@ from model import ConvWTA
 
 import os
 ckpt_dir = "ckpt/"
-if not os.path.isdir(ckpt_dir): 
+if not os.path.isdir(ckpt_dir):
   os.makedirs(ckpt_dir)
 ckpt_path = "ckpt/model.ckpt"
 
@@ -40,7 +40,8 @@ for epoch in range(epochs):
     batch_x = batch_x.reshape(shape)
     l, _ =  sess.run([loss, train], {x:batch_x})
     avg_loss += l / total_batch
-    
+
+  ae.save("ckpt/model{}.ckpt".format(epoch))
   print("Epoch : {:04d}, Loss : {:.9f}".format(epoch+1, avg_loss))
 print("Training time : {}".format(time.time() - start_time))
 
