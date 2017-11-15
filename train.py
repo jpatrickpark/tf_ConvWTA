@@ -11,6 +11,7 @@ import time
 
 from util import timestamp
 import numpy as np
+import pickle
 
 default_dir_suffix = timestamp()
 
