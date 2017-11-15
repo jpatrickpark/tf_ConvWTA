@@ -88,9 +88,12 @@ def cifar10_whitened(data_dir, each_dim):
         os.path.exists(data_dir+"test_{}.p".format(each_dim)) and \
         os.path.exists(data_dir+"mean_{}.txt".format(each_dim)):
         return pickle.load( open( data_dir+"train_{}.p".format(each_dim), "rb" ) )
+
+    if not os.path.isdir(data_dir):
+        os.makedirs(data_dir)
+
     (X_train, y_train), (X_test, y_test) = load_data()
 
-    # With fully connected network, it will be too ambitious to use 32*32 color image.
     # Reduce dimension by doing grayscale.
     X_train = rgb2gray(X_train)
     X_test = rgb2gray(X_test)
