@@ -113,7 +113,7 @@ def cifar10_whitened(data_dir, each_dim):
 
     pickle.dump( X_train, open(data_dir+"train_{}.p".format(each_dim),"wb") )
     pickle.dump( X_test, open(data_dir+"test_{}.p".format(each_dim),"wb") )
-    with open(data_dir+"mean_{}.txt", "a") as f:
+    with open(data_dir+"mean_{}.txt".format(each_dim), "a") as f:
         f.write(str(image_mean))
 
     return X_train#, X_test # X_test not used in train.py
@@ -142,6 +142,13 @@ def get_given_each_dim(which_data):
     else:
         return 32
 
+def get_given_train_size(data, train_size, which_data):
+    '''if FLAGS.train_size is larger than actual size of data, fix it'''
+    if which_data == 0:
+        return data.train.num_examples if data.train.num_examples <= train_size else train_size
+    else:
+        return len(data) if len(data) <= train_size else train_size
+
 def main():
     if not os.path.isdir(FLAGS.train_dir):
         os.makedirs(FLAGS.train_dir)
@@ -167,8 +174,9 @@ def main():
     data = read_given_data(FLAGS.which_data, each_dim)
 
     start_time = time.time()
+    train_size = get_given_train_size(data,FLAGS.train_size, FLAGS.which_data)
+    total_batch = int(train_size / FLAGS.batch_size)
     for epoch in range(FLAGS.epochs):
-        total_batch = int(FLAGS.train_size / FLAGS.batch_size)
         avg_loss = 0
         for i in range(total_batch):
             batch_x = next_given_batch(data, FLAGS.batch_size, FLAGS.which_data)
