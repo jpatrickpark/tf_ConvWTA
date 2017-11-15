@@ -38,8 +38,6 @@ tf.app.flags.DEFINE_integer('test_size', 10000,
                             'number of examples to use to test classifier')
 tf.app.flags.DEFINE_boolean('write_logs', True,
                             'write log files')
-tf.app.flags.DEFINE_integer('each_dim', 28,
-                            'number of pixels in each dimension')
 
 FLAGS = tf.app.flags.FLAGS
 
@@ -84,8 +82,11 @@ def whiten_images(train, test):
 
     return result[:length_train], result[length_train:], mean
 
-def cifar10_whitened(data_dir):
-    # TODO: use data_dir to store data and load them later
+def cifar10_whitened(data_dir, each_dim):
+    if os.path.exists(data_dir+"train_{}.p".format(each_dim)) and \
+        os.path.exists(data_dir+"test_{}.p".format(each_dim)) and \
+        os.path.exists(data_dir+"mean_{}.txt".format(each_dim)):
+        return pickle.load( open( data_dir+"train_{}.p".format(each_dim), "rb" ) )
     (X_train, y_train), (X_test, y_test) = load_data()
 
     # With fully connected network, it will be too ambitious to use 32*32 color image.
@@ -94,31 +95,33 @@ def cifar10_whitened(data_dir):
     X_test = rgb2gray(X_test)
 
     # Crop center in order to be able to train quickly
-    X_train = crop_center(X_train,FLAGS.each_dim)
-    X_test = crop_center(X_test,FLAGS.each_dim)
+    X_train = crop_center(X_train, each_dim)
+    X_test = crop_center(X_test, each_dim)
 
     # Flatten arrays
-    X_train = X_train.reshape(X_train.shape[0],FLAGS.each_dim**2)
-    X_test = X_test.reshape(X_test.shape[0],FLAGS.each_dim**2)
+    X_train = X_train.reshape(X_train.shape[0],each_dim**2)
+    X_test = X_test.reshape(X_test.shape[0],each_dim**2)
     y_train = y_train.reshape(y_train.shape[0])
     y_test = y_test.reshape(y_test.shape[0])
 
     # Whitten images
     X_train, X_test, image_mean = whiten_images(X_train,X_test)
 
-    with open(FLAGS.log_path, "a") as f:
+    pickle.dump( X_train, open(data_dir+"train_{}.p".format(each_dim),"wb") )
+    pickle.dump( X_test, open(data_dir+"test_{}.p".format(each_dim),"wb") )
+    with open(data_dir+"mean_{}.txt", "a") as f:
         f.write(str(image_mean))
 
     return X_train#, X_test # X_test not used in train.py
 
-def read_given_data(which_data):
+def read_given_data(which_data, each_dim):
     # MNIST
     if which_data == 0:
         data_dir = "MNIST_data/"
         return input_data.read_data_sets(data_dir, one_hot=True)
     else:
         data_dir = "CIFAR10_whitened_data/"
-        return cifar10_whitened(data_dir)
+        return cifar10_whitened(data_dir, each_dim)
         #fix
         #return input_data.read_data_sets(data_dir, one_hot=True)
 
@@ -157,7 +160,7 @@ def main():
     sess.run(tf.global_variables_initializer())
 
     # Data read & train
-    data = read_given_data(FLAGS.which_data)
+    data = read_given_data(FLAGS.which_data, each_dim)
 
     start_time = time.time()
     for epoch in range(FLAGS.epochs):
