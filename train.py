@@ -17,7 +17,7 @@ default_dir_suffix = timestamp()
 
 # One file to keep track of them all
 with open("whichdir.txt", "a") as myfile:
-    myfile.write("which_data: {}, sparsity: {}, path: {}\n".format(sys.argv[1],sys.argv[2],default_dir_suffix))
+    myfile.write("which_data: {}, sparsity: {}, num_features: {}, path: {}\n".format(sys.argv[1],sys.argv[2],sys.argv[3],default_dir_suffix))
 
 tf.app.flags.DEFINE_string('train_dir', 'train_%s' % default_dir_suffix,
                            'where to store checkpoints to (or load checkpoints from)')
@@ -29,6 +29,8 @@ tf.app.flags.DEFINE_float('sparsity', float(sys.argv[2]),
                           'lifetime sparsity constraint to enforce')
 tf.app.flags.DEFINE_integer('which_data', int(sys.argv[1]),
                            'which data to load')
+tf.app.flags.DEFINE_integer('num_features', int(sys.argv[3]),
+                            'number of features to collect')
 tf.app.flags.DEFINE_integer('batch_size', 100,
                             'batch size to use during training')
 tf.app.flags.DEFINE_integer('epochs', 100,
@@ -153,15 +155,15 @@ def main():
     if not os.path.isdir(FLAGS.train_dir):
         os.makedirs(FLAGS.train_dir)
     with open(FLAGS.log_path, "a") as f:
-        f.write("which_data: {}, lifetime_sparsity: {}, learning_rate: {}, batch_size: {}, train_size: {}\n".format(
-            FLAGS.which_data, FLAGS.sparsity, FLAGS.learning_rate, FLAGS.batch_size, FLAGS.train_size))
+        f.write("which_data: {}, lifetime_sparsity: {}, learning_rate: {}, batch_size: {}, train_size: {}, num_features: {}\n".format(
+            FLAGS.which_data, FLAGS.sparsity, FLAGS.learning_rate, FLAGS.batch_size, FLAGS.train_size, FLAGS.num_features))
 
     each_dim = get_given_each_dim(FLAGS.which_data)
     shape = [FLAGS.batch_size, each_dim, each_dim, 1]
 
     # Basic tensorflow setting
     sess = tf.Session()
-    ae = ConvWTA(sess)
+    ae = ConvWTA(sess,num_features=FLAGS.num_features)
     x = tf.placeholder(tf.float32, shape)
     loss = ae.loss(x, lifetime_sparsity=FLAGS.sparsity)
 
