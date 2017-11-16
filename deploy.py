@@ -44,7 +44,7 @@ data = util.read_test_data(which_data, each_dim, False)
 sess = tf.Session()
 ae = ConvWTA(sess, num_features=num_features)#learning_rate
 try:
-    ae.restore(restoreDir+"model.ckpt")
+    ae.restore(restoreDir+"modelFinished.ckpt")
 except:
     loaded = False
 else:
