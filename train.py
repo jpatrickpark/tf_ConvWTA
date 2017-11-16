@@ -121,15 +121,14 @@ def cifar10_whitened(data_dir, each_dim):
     return X_train#, X_test # X_test not used in train.py
 
 def read_given_data(which_data, each_dim):
-    # MNIST
     if which_data == 0:
+        # MNIST
         data_dir = "MNIST_data/"
         return input_data.read_data_sets(data_dir, one_hot=True)
     else:
+        # CIFAR10 grayscale whitened
         data_dir = "CIFAR10_whitened_data/"
         return cifar10_whitened(data_dir, each_dim)
-        #fix
-        #return input_data.read_data_sets(data_dir, one_hot=True)
 
 def next_given_batch(data, batch_size, which_data):
     if which_data == 0:
@@ -138,6 +137,7 @@ def next_given_batch(data, batch_size, which_data):
     else:
         return next_batch(batch_size, data)
 
+# copied to util
 def get_given_each_dim(which_data):
     if which_data == 0:
         return 28

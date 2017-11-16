@@ -12,11 +12,36 @@ import sklearn.svm
 import tensorflow as tf
 import numpy as np
 
+import pickle
+import os
+from tensorflow.contrib.keras.python.keras.datasets.cifar10 import load_data
+from tensorflow.examples.tutorials.mnist import input_data
+
+def get_given_each_dim(which_data):
+    if which_data == 0:
+        return 28
+    else:
+        return 32
+
+def cifar10_whitened_test(data_dir, each_dim):
+    if os.path.exists(data_dir+"train_{}.p".format(each_dim)) and \
+        os.path.exists(data_dir+"test_{}.p".format(each_dim)) and \
+        os.path.exists(data_dir+"mean_{}.txt".format(each_dim)):
+        return pickle.load( open( data_dir+"test_{}.p".format(each_dim), "rb" ) )
+
+def read_test_data(which_data, each_dim, one_hot):
+    if which_data == 0:
+        # MNIST
+        data_dir = "MNIST_data/"
+        return input_data.read_data_sets(data_dir, one_hot=one_hot).test.images
+    else:
+        # CIFAR10 grayscale whitened
+        data_dir = "CIFAR10_whitened_data/"
+        return cifar10_whitened_test(data_dir, each_dim)
 
 def timestamp(format='%Y_%m_%d_%H_%M_%S'):
     """Returns the current time as a string."""
     return datetime.datetime.now().strftime(format)
-
 
 def plot_dictionary(dictionary, shape, num_shown=20, row_length=10):
     """Plots the code dictionary."""
