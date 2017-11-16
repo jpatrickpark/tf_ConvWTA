@@ -188,7 +188,7 @@ def main():
             avg_loss += l / total_batch
             if i % 50 == 0:
                 with open(FLAGS.log_path, "a") as f:
-                    f.write("Loss : {:.9f}\n".format(avg_loss))
+                    f.write("Loss : {:.9f}\n".format(l))
 
         ae.save(FLAGS.train_dir+"/model{}.ckpt".format(epoch))
         with open(FLAGS.log_path, "a") as f:
