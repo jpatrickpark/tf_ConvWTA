@@ -219,6 +219,7 @@ def main():
         ae.save(FLAGS.train_dir+"/model{}.ckpt".format(epoch))
         with open(FLAGS.log_path, "a") as f:
             f.write("Epoch : {:04d}, Loss : {:.9f}\n".format(epoch+1, avg_loss))
+            f.write("Training time (cumulative) : {}\n".format(time.time() - start_time))
     with open(FLAGS.log_path, "a") as f:
         f.write("Training time : {}\n".format(time.time() - start_time))
 
