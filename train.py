@@ -120,35 +120,61 @@ def cifar10_whitened(data_dir, each_dim):
 
     return X_train#, X_test # X_test not used in train.py
 
+def cifar10_grayscale(data_dir, each_dim):
+    if os.path.exists(data_dir+"train_{}.p".format(each_dim)) and \
+        os.path.exists(data_dir+"test_{}.p".format(each_dim)):# and \
+        return pickle.load( open( data_dir+"train_{}.p".format(each_dim), "rb" ) )
+
+    if not os.path.isdir(data_dir):
+        os.makedirs(data_dir)
+
+    (X_train, y_train), (X_test, y_test) = load_data()
+
+    # Reduce dimension by doing grayscale.
+    X_train = rgb2gray(X_train)
+    X_test = rgb2gray(X_test)
+
+    # Crop center in order to be able to train quickly
+    X_train = crop_center(X_train, each_dim)
+    X_test = crop_center(X_test, each_dim)
+
+    pickle.dump( X_train, open(data_dir+"train_{}.p".format(each_dim),"wb") )
+    pickle.dump( X_test, open(data_dir+"test_{}.p".format(each_dim),"wb") )
+
+    return X_train#, X_test # X_test not used in train.py
+
 def read_given_data(which_data, each_dim):
     if which_data == 0:
         # MNIST
         data_dir = "MNIST_data/"
         return input_data.read_data_sets(data_dir, one_hot=True)
-    else:
+    elif which_data == 1:
         # CIFAR10 grayscale whitened
         data_dir = "CIFAR10_whitened_data/"
         return cifar10_whitened(data_dir, each_dim)
+    else: #2
+        data_dir = "CIFAR10_grayscale_data/"
+        return cifar10_grayscale(data_dir, each_dim)
 
 def next_given_batch(data, batch_size, which_data):
     if which_data == 0:
         batch_x, _ = data.train.next_batch(batch_size)
         return batch_x
-    else:
+    else:#1,2
         return next_batch(batch_size, data)
 
 # copied to util
 def get_given_each_dim(which_data):
     if which_data == 0:
         return 28
-    else:
+    else:#1,2
         return 32
 
 def get_given_train_size(data, train_size, which_data):
     '''if FLAGS.train_size is larger than actual size of data, fix it'''
     if which_data == 0:
         return data.train.num_examples if data.train.num_examples <= train_size else train_size
-    else:
+    else:#1,2
         return len(data) if len(data) <= train_size else train_size
 
 def main():
