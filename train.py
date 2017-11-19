@@ -17,7 +17,7 @@ default_dir_suffix = timestamp()
 
 # One file to keep track of them all
 with open("whichdir.txt", "a") as myfile:
-    myfile.write("which_data: {}, sparsity: {}, num_features: {}, path: {}\n".format(sys.argv[1],sys.argv[2],sys.argv[3],default_dir_suffix))
+    myfile.write("which_data: {}, sparsity: {}, num_features: {}, batch_size: {}, path: {}\n".format(sys.argv[1],sys.argv[2],sys.argv[3],sys.argv[4],default_dir_suffix))
 
 tf.app.flags.DEFINE_string('train_dir', 'train_%s' % default_dir_suffix,
                            'where to store checkpoints to (or load checkpoints from)')
@@ -31,7 +31,7 @@ tf.app.flags.DEFINE_integer('which_data', int(sys.argv[1]),
                            'which data to load')
 tf.app.flags.DEFINE_integer('num_features', int(sys.argv[3]),
                             'number of features to collect')
-tf.app.flags.DEFINE_integer('batch_size', 100,
+tf.app.flags.DEFINE_integer('batch_size', int(sys.argv[4]),
                             'batch size to use during training')
 tf.app.flags.DEFINE_integer('epochs', 100,
                             'total epoches to train')
