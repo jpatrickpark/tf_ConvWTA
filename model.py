@@ -50,9 +50,9 @@ class ConvWTA(object):
 
   def encoder(self, x):
     with tf.variable_scope(self.name) as vs:
-      h = self._conv(x, self.size[1], 5, 5, 1, 1, "conv_1")
-      h = self._conv(h, self.size[2], 5, 5, 1, 1, "conv_2")
-      h = self._conv(h, self.size[3], 5, 5, 1, 1, "conv_3")
+      h = self._conv(x, self.size[1], 1, 1, "conv_1")
+      h = self._conv(h, self.size[2], 1, 1, "conv_2")
+      h = self._conv(h, self.size[3], 1, 1, "conv_3")
     return h
 
   def _decoder(self, h):
@@ -104,7 +104,7 @@ class ConvWTA(object):
     return k, b
 
   def _conv(self, x, out_dim,
-            k_h, k_w, s_h, s_w, name, end=False):
+            s_h, s_w, name, end=False):
     with tf.variable_scope(name, reuse=True) as vs:
       k = tf.get_variable('filter')
       b = tf.get_variable('biases')
