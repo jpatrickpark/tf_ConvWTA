@@ -17,7 +17,7 @@ default_dir_suffix = timestamp()
 
 # One file to keep track of them all
 with open("whichdir.txt", "a") as myfile:
-    myfile.write("which_data: {}, sparsity: {}, num_features: {}, batch_size: {}, path: {}\n".format(sys.argv[1],sys.argv[2],sys.argv[3],sys.argv[4],default_dir_suffix))
+    myfile.write("command: {} path: {}\n".format(str(sys.argv), default_dir_suffix))
 
 tf.app.flags.DEFINE_string('train_dir', 'train_%s' % default_dir_suffix,
                            'where to store checkpoints to (or load checkpoints from)')
@@ -25,13 +25,13 @@ tf.app.flags.DEFINE_string('log_path', 'log_%s.txt' % default_dir_suffix,
                            'where to store loss logs to (use with --write_logs)')
 tf.app.flags.DEFINE_float('learning_rate', 1e-3,
                           'learning rate to use during training')
-tf.app.flags.DEFINE_float('sparsity', float(sys.argv[2]),
+tf.app.flags.DEFINE_float('sparsity', 0.05,
                           'lifetime sparsity constraint to enforce')
-tf.app.flags.DEFINE_integer('which_data', int(sys.argv[1]),
-                           'which data to load')
-tf.app.flags.DEFINE_integer('num_features', int(sys.argv[3]),
+tf.app.flags.DEFINE_integer('which_data', 0,
+                            '0: MNIST, 1: CIFAR10_whitened, 2: CIFAR10_grayscale')
+tf.app.flags.DEFINE_integer('num_features', 16,
                             'number of features to collect')
-tf.app.flags.DEFINE_integer('batch_size', int(sys.argv[4]),
+tf.app.flags.DEFINE_integer('batch_size', 100,
                             'batch size to use during training')
 tf.app.flags.DEFINE_integer('epochs', 100,
                             'total epoches to train')
@@ -39,6 +39,14 @@ tf.app.flags.DEFINE_integer('train_size', 55000,
                             'number of examples to use to train classifier')
 tf.app.flags.DEFINE_integer('test_size', 10000,
                             'number of examples to use to test classifier')
+tf.app.flags.DEFINE_integer('stride', 1,
+                            'stride in conv2d layer')
+tf.app.flags.DEFINE_integer('filter_size', 5,
+                            'size of filter (filter_size, filter_size)')
+tf.app.flags.DEFINE_integer('first_num_filters', 128,
+                            'number of filters to use in the first layer')
+tf.app.flags.DEFINE_integer('second_num_filters', 128,
+                            'number of filters to use in the second layer')
 tf.app.flags.DEFINE_boolean('write_logs', True,
                             'write log files')
 
@@ -181,15 +189,16 @@ def main():
     if not os.path.isdir(FLAGS.train_dir):
         os.makedirs(FLAGS.train_dir)
     with open(FLAGS.log_path, "a") as f:
-        f.write("which_data: {}, lifetime_sparsity: {}, learning_rate: {}, batch_size: {}, train_size: {}, num_features: {}\n".format(
-            FLAGS.which_data, FLAGS.sparsity, FLAGS.learning_rate, FLAGS.batch_size, FLAGS.train_size, FLAGS.num_features))
+        f.write("which_data: {}, lifetime_sparsity: {}, learning_rate: {}, batch_size: {}, train_size: {}, num_features: {}, stride: {}, filter_size: {}, first_num_filters: {}, second_num_filters: {}\n".format(
+            FLAGS.which_data, FLAGS.sparsity, FLAGS.learning_rate, FLAGS.batch_size, FLAGS.train_size, FLAGS.num_features,
+            FLAGS.stride, FLAGS.filter_size, FLAGS.first_num_filters, FLAGS.second_num_filters))
 
     each_dim = get_given_each_dim(FLAGS.which_data)
     shape = [FLAGS.batch_size, each_dim, each_dim, 1]
 
     # Basic tensorflow setting
     sess = tf.Session()
-    ae = ConvWTA(sess,num_features=FLAGS.num_features)
+    ae = ConvWTA(sess,num_features=FLAGS.num_features,stride=FLAGS.stride,filter_size=FLAGS.filter_size,first_num_filters=FLAGS.first_num_filters,second_num_filters=FLAGS.second_num_filters)
     x = tf.placeholder(tf.float32, shape)
     loss = ae.loss(x, lifetime_sparsity=FLAGS.sparsity)
 
