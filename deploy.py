@@ -29,6 +29,22 @@ for each in parametersList:
     else:
         exec(variableName+'=int('+value+')')
 
+try:
+    stride
+except:
+    stride=1
+try:
+    filter_size
+except:
+    filter_size=5
+try:
+    first_num_filters
+except:
+    first_num_filters=128
+try:
+    second_num_filters
+except:
+    second_num_filters=128
 #print(which_data, lifetime_sparsity, learning_rate, batch_size, train_size, num_features)
 
 each_dim = util.get_given_each_dim(which_data)
@@ -42,7 +58,7 @@ data = util.read_test_data(which_data, each_dim, False)
 #  os.makedirs(recon_dir)
 
 sess = tf.Session()
-ae = ConvWTA(sess, num_features=num_features)#learning_rate
+ae = ConvWTA(sess, num_features=num_features,stride=stride,filter_size=filter_size,first_num_filters=first_num_filters,second_num_filters=second_num_filters)#learning_rate
 try:
     ae.restore(restoreDir+"modelFinished.ckpt")
 except:
