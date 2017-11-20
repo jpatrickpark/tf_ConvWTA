@@ -37,12 +37,13 @@ class ConvWTA(object):
       sess : TensorFlow session.
       x : Input tensor.
   """
-  def __init__(self, sess, num_features=16,  name="ConvWTA"):
+  def __init__(self, sess, num_features=16,  name="ConvWTA", stride=1, filter_size=5, first_num_filters=128, second_num_filters=128):
     self.sess = sess
     self.name = name
-    self.size = [1, 128, 128, num_features]  # ref [1]
+    self.size = [1, first_num_filters, second_num_filters, num_features]  # ref [1]
+    self.stride=stride
 
-    self._set_variables()
+    self._set_variables(filter_size)
     self.t_vars = tf.get_collection(
       tf.GraphKeys.TRAINABLE_VARIABLES, scope=self.name)
     self.sess.run(tf.variables_initializer(self.t_vars))
@@ -50,9 +51,9 @@ class ConvWTA(object):
 
   def encoder(self, x):
     with tf.variable_scope(self.name) as vs:
-      h = self._conv(x, self.size[1], 5, 5, 1, 1, "conv_1")
-      h = self._conv(h, self.size[2], 5, 5, 1, 1, "conv_2")
-      h = self._conv(h, self.size[3], 5, 5, 1, 1, "conv_3")
+      h = self._conv(x, self.size[1], self.stride, self.stride, "conv_1")
+      h = self._conv(h, self.size[2], self.stride, self.stride, "conv_2")
+      h = self._conv(h, self.size[3], self.stride, self.stride, "conv_3")
     return h
 
   def _decoder(self, h):
@@ -77,11 +78,11 @@ class ConvWTA(object):
     y = self._decoder(h)
     return y
 
-  def _set_variables(self):
+  def _set_variables(self, filter_size):
     with tf.variable_scope(self.name) as vs:
-      self._conv_var(self.size[0], self.size[1],  5,  5, "conv_1")
-      self._conv_var(self.size[1], self.size[2],  5,  5, "conv_2")
-      self._conv_var(self.size[2], self.size[3],  5,  5, "conv_3")
+      self._conv_var(self.size[0], self.size[1],  filter_size,  filter_size, "conv_1")
+      self._conv_var(self.size[1], self.size[2],  filter_size,  filter_size, "conv_2")
+      self._conv_var(self.size[2], self.size[3],  filter_size,  filter_size, "conv_3")
       self.f, _ = self._deconv_var(
         self.size[-1], self.size[0], 11, 11, "deconv")
 
@@ -104,7 +105,7 @@ class ConvWTA(object):
     return k, b
 
   def _conv(self, x, out_dim,
-            k_h, k_w, s_h, s_w, name, end=False):
+            s_h, s_w, name, end=False):
     with tf.variable_scope(name, reuse=True) as vs:
       k = tf.get_variable('filter')
       b = tf.get_variable('biases')
