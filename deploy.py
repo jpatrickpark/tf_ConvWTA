@@ -45,9 +45,12 @@ try:
     second_num_filters
 except:
     second_num_filters=128
+try:
+    each_dim
+except:
+    each_dim = util.get_given_each_dim(which_data)
 #print(which_data, lifetime_sparsity, learning_rate, batch_size, train_size, num_features)
 
-each_dim = util.get_given_each_dim(which_data)
 data = util.read_test_data(which_data, each_dim, False)
 
 #dict_dir = "dict"

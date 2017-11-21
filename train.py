@@ -47,6 +47,8 @@ tf.app.flags.DEFINE_integer('first_num_filters', 128,
                             'number of filters to use in the first layer')
 tf.app.flags.DEFINE_integer('second_num_filters', 128,
                             'number of filters to use in the second layer')
+tf.app.flags.DEFINE_integer('each_dim', 28,
+                            'dimension of each image')
 tf.app.flags.DEFINE_boolean('write_logs', True,
                             'write log files')
 
@@ -189,11 +191,11 @@ def main():
     if not os.path.isdir(FLAGS.train_dir):
         os.makedirs(FLAGS.train_dir)
     with open(FLAGS.log_path, "a") as f:
-        f.write("which_data: {}, lifetime_sparsity: {}, learning_rate: {}, batch_size: {}, train_size: {}, num_features: {}, stride: {}, filter_size: {}, first_num_filters: {}, second_num_filters: {}\n".format(
+        f.write("which_data: {}, lifetime_sparsity: {}, learning_rate: {}, batch_size: {}, train_size: {}, num_features: {}, stride: {}, filter_size: {}, first_num_filters: {}, second_num_filters: {}, each_dim: {}\n".format(
             FLAGS.which_data, FLAGS.sparsity, FLAGS.learning_rate, FLAGS.batch_size, FLAGS.train_size, FLAGS.num_features,
-            FLAGS.stride, FLAGS.filter_size, FLAGS.first_num_filters, FLAGS.second_num_filters))
+            FLAGS.stride, FLAGS.filter_size, FLAGS.first_num_filters, FLAGS.second_num_filters, FLAGS.each_dim))
 
-    each_dim = get_given_each_dim(FLAGS.which_data)
+    each_dim = FLAGS.each_dim#get_given_each_dim(FLAGS.which_data)
     shape = [FLAGS.batch_size, each_dim, each_dim, 1]
 
     # Basic tensorflow setting
