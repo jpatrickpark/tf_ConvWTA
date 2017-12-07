@@ -49,6 +49,10 @@ try:
     each_dim
 except:
     each_dim = util.get_given_each_dim(which_data)
+try:
+    deconv_dim
+except:
+    deconv_dim=11
 #print(which_data, lifetime_sparsity, learning_rate, batch_size, train_size, num_features)
 
 data = util.read_test_data(which_data, each_dim, False)
@@ -63,7 +67,7 @@ if (which_data==3):#leave this line for somethings I've already run
 #  os.makedirs(recon_dir)
 
 sess = tf.Session()
-ae = ConvWTA(sess, num_features=num_features,stride=stride,filter_size=filter_size,first_num_filters=first_num_filters,second_num_filters=second_num_filters)#learning_rate
+ae = ConvWTA(sess, num_features=num_features,stride=stride,filter_size=filter_size,first_num_filters=first_num_filters,second_num_filters=second_num_filters,deconv_dim=deconv_dim)#learning_rate
 try:
     ae.restore(restoreDir+"modelFinished.ckpt")
 except:
@@ -71,16 +75,16 @@ except:
 else:
     loaded = True
 
-numEpoch = 100
+index = -1
 while not loaded:
     try:
-        ae.restore(restoreDir+os.listdir(restoreDir)[-1].split(".")[0]+".ckpt")
+        ae.restore(restoreDir+os.listdir(restoreDir)[index].split(".")[0]+".ckpt")
         #ae.restore(restoreDir+"model{}.ckpt".format(numEpoch))
     except:
-        numEpoch -= 1
+        index -= 1
     else:
         loaded = True
-    if numEpoch < 0:
+    if index < -4:
         print("model files do not exist")
         sys.exit()
 

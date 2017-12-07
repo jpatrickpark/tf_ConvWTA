@@ -37,7 +37,8 @@ class ConvWTA(object):
       sess : TensorFlow session.
       x : Input tensor.
   """
-  def __init__(self, sess, num_features=16,  name="ConvWTA", stride=1, filter_size=5, first_num_filters=128, second_num_filters=128):
+  def __init__(self, sess, num_features=16,  name="ConvWTA", stride=1, filter_size=5, first_num_filters=128, second_num_filters=128,deconv_dim=11):
+    self.deconv_dim = deconv_dim
     self.sess = sess
     self.name = name
     self.size = [1, first_num_filters, second_num_filters, num_features]  # ref [1]
@@ -61,7 +62,7 @@ class ConvWTA(object):
     out_shape = tf.stack([shape[0], shape[1], shape[2], 1])
     with tf.variable_scope(self.name) as vs:
       y = self._deconv(h, out_shape, self.size[0],
-                       11, 11, 1, 1, "deconv", end=True)
+                       self.deconv_dim, self.deconv_dim, 1, 1, "deconv", end=True)
     return y
 
   def loss(self, x, lifetime_sparsity=0.20):
@@ -84,7 +85,7 @@ class ConvWTA(object):
       self._conv_var(self.size[1], self.size[2],  filter_size,  filter_size, "conv_2")
       self._conv_var(self.size[2], self.size[3],  filter_size,  filter_size, "conv_3")
       self.f, _ = self._deconv_var(
-        self.size[-1], self.size[0], 11, 11, "deconv")
+        self.size[-1], self.size[0], self.deconv_dim, self.deconv_dim, "deconv")
 
   def _conv_var(self, in_dim, out_dim, k_h, k_w, name, stddev=0.1):
     with tf.variable_scope(name) as vs:
