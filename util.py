@@ -24,7 +24,7 @@ def get_given_each_dim(which_data):
     elif which_data == 3:
         return 64
     else:#1,2
-        return 28
+        return 32
 
 def cifar10_whitened_test(data_dir, each_dim):
     if os.path.exists(data_dir+"train_{}.p".format(each_dim)) and \
