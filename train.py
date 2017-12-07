@@ -1,6 +1,7 @@
 import tensorflow as tf
 tf.set_random_seed(2017)
 
+from sklearn.datasets import fetch_olivetti_faces
 from model import ConvWTA
 
 import os
@@ -9,7 +10,7 @@ from tensorflow.contrib.keras.python.keras.datasets.cifar10 import load_data
 from tensorflow.examples.tutorials.mnist import input_data
 import time
 
-from util import timestamp
+from util import timestamp, get_given_each_dim
 import numpy as np
 import pickle
 
@@ -29,7 +30,7 @@ tf.app.flags.DEFINE_float('sparsity', 0.05,
                           'lifetime sparsity constraint to enforce')
 tf.app.flags.DEFINE_integer('which_data', 0,
                             '0: MNIST, 1: CIFAR10_whitened, 2: CIFAR10_grayscale')
-tf.app.flags.DEFINE_integer('num_features', 16,
+tf.app.flags.DEFINE_integer('num_features', 64,
                             'number of features to collect')
 tf.app.flags.DEFINE_integer('batch_size', 100,
                             'batch size to use during training')
@@ -43,9 +44,9 @@ tf.app.flags.DEFINE_integer('stride', 1,
                             'stride in conv2d layer')
 tf.app.flags.DEFINE_integer('filter_size', 5,
                             'size of filter (filter_size, filter_size)')
-tf.app.flags.DEFINE_integer('first_num_filters', 128,
+tf.app.flags.DEFINE_integer('first_num_filters', 64,
                             'number of filters to use in the first layer')
-tf.app.flags.DEFINE_integer('second_num_filters', 128,
+tf.app.flags.DEFINE_integer('second_num_filters', 64,
                             'number of filters to use in the second layer')
 tf.app.flags.DEFINE_integer('each_dim', 28,
                             'dimension of each image')
@@ -162,9 +163,11 @@ def read_given_data(which_data, each_dim):
         # CIFAR10 grayscale whitened
         data_dir = "CIFAR10_whitened_data/"
         return cifar10_whitened(data_dir, each_dim)
-    else: #2
+    elif which_data == 2: #2
         data_dir = "CIFAR10_grayscale_data/"
         return cifar10_grayscale(data_dir, each_dim)
+    else:
+        return fetch_olivetti_faces()["data"]
 
 def next_given_batch(data, batch_size, which_data):
     if which_data == 0:
@@ -174,16 +177,22 @@ def next_given_batch(data, batch_size, which_data):
         return next_batch(batch_size, data)
 
 # copied to util
+'''
 def get_given_each_dim(which_data):
     if which_data == 0:
         return 28
+    elif which_data == 3:
+        return 64
     else:#1,2
-        return 32
+        return 28
+'''
 
 def get_given_train_size(data, train_size, which_data):
     '''if FLAGS.train_size is larger than actual size of data, fix it'''
     if which_data == 0:
         return data.train.num_examples if data.train.num_examples <= train_size else train_size
+    elif which_data == 3:
+        return 400
     else:#1,2
         return len(data) if len(data) <= train_size else train_size
 
@@ -195,7 +204,7 @@ def main():
             FLAGS.which_data, FLAGS.sparsity, FLAGS.learning_rate, FLAGS.batch_size, FLAGS.train_size, FLAGS.num_features,
             FLAGS.stride, FLAGS.filter_size, FLAGS.first_num_filters, FLAGS.second_num_filters, FLAGS.each_dim))
 
-    each_dim = FLAGS.each_dim#get_given_each_dim(FLAGS.which_data)
+    each_dim = get_given_each_dim(FLAGS.which_data)
     shape = [FLAGS.batch_size, each_dim, each_dim, 1]
 
     # Basic tensorflow setting

@@ -3,6 +3,7 @@ Shared training utilities.
 """
 
 import datetime
+from sklearn.datasets import fetch_olivetti_faces
 
 import matplotlib.pyplot as plt
 import sklearn.decomposition
@@ -20,8 +21,10 @@ from tensorflow.examples.tutorials.mnist import input_data
 def get_given_each_dim(which_data):
     if which_data == 0:
         return 28
+    elif which_data == 3:
+        return 64
     else:#1,2
-        return 32
+        return 28
 
 def cifar10_whitened_test(data_dir, each_dim):
     if os.path.exists(data_dir+"train_{}.p".format(each_dim)) and \
@@ -43,10 +46,12 @@ def read_test_data(which_data, each_dim, one_hot):
         # CIFAR10 grayscale whitened
         data_dir = "CIFAR10_whitened_data/"
         return cifar10_whitened_test(data_dir, each_dim)
-    else:
+    elif which_data == 2:
         # CIFAR10 grayscale
         data_dir = "CIFAR10_grayscale_data/"
         return cifar10_grayscale_test(data_dir, each_dim)
+    elif which_data == 3:
+        return fetch_olivetti_faces()["data"]
 
 def timestamp(format='%Y_%m_%d_%H_%M_%S'):
     """Returns the current time as a string."""

@@ -52,6 +52,8 @@ except:
 #print(which_data, lifetime_sparsity, learning_rate, batch_size, train_size, num_features)
 
 data = util.read_test_data(which_data, each_dim, False)
+if (which_data==3):
+    each_dim=64
 
 #dict_dir = "dict"
 #if not os.path.isdir(dict_dir):
@@ -69,10 +71,11 @@ except:
 else:
     loaded = True
 
-numEpoch = 99
+numEpoch = 100
 while not loaded:
     try:
-        ae.restore(restoreDir+"model{}.ckpt".format(numEpoch))
+        ae.restore(restoreDir+os.listdir(restoreDir)[-1].split(".")[0]+".ckpt")
+        #ae.restore(restoreDir+"model{}.ckpt".format(numEpoch))
     except:
         numEpoch -= 1
     else:
