@@ -12,6 +12,10 @@ import util
 
 restoreDir = 'train_'+sys.argv[1][4:-4]+'/'
 
+do_svm = False
+do_tsne = False
+do_draw = True
+
 with open(sys.argv[1]) as f:
     parameters = f.readline()
 
@@ -55,9 +59,9 @@ except:
     deconv_dim=11
 #print(which_data, lifetime_sparsity, learning_rate, batch_size, train_size, num_features)
 
-data = util.read_test_data(which_data, each_dim, False)
 if (which_data==3):#leave this line for somethings I've already run
     each_dim=64
+data = util.read_test_data(which_data, each_dim, False)
 
 #dict_dir = "dict"
 #if not os.path.isdir(dict_dir):
@@ -93,21 +97,86 @@ while not loaded:
 #from tensorflow.examples.tutorials.mnist import input_data
 #mnist = input_data.read_data_sets("mnist/", one_hot=True)
 
-# Save deconv kernels as images.
-f = ae.features()
-dictionary = []
-for idx in range(f.shape[-1]):
-  dictionary.append(f[:,:,0,idx])
-plot_dictionary(dictionary, dictionary[0].shape, num_shown=int(np.sqrt(num_features))**2, row_length=int(np.sqrt(num_features)))
+'''
+if do_svm:
+    test_labels = util.read_test_labels(which_data, each_dim, False)
+    train_test = util.read_data_and_labels(which_data, each_dim)
+    x = tf.placeholder(tf.float32, [1, each_dim, each_dim, 1])
+    y = ae.encoder(x)
+    encoded_train = []
+    for i in range(len(train_test.train.labels)):
+        image = train_test.train.images[i, :]
+        image = image.reshape([1, each_dim, each_dim, 1])
+        result = sess.run(y, {x:image})
+        encoded_train.append(result.flatten())
+    encoded_test = []
+    for i in range(len(test_labels)):
+        image = data[i, :]
+        image = image.reshape([1, each_dim, each_dim, 1])
+        result = sess.run(y, {x:image})
+        encoded_test.append(result.flatten())
+        
+    # this is plain svm, without using the model
+    value = util.svm_acc(encoded_train,train_test.train.labels,encoded_test,test_labels,0.001)
+    print(value[0])
+'''
+'''
+if do_tsne_mnist:
+    test_labels = util.read_test_labels(which_data, each_dim, False)
+    train_test = util.read_data_and_labels(which_data, each_dim)
+    x = tf.placeholder(tf.float32, [1, each_dim, each_dim, 1])
+    y = ae.encoder(x)
+    encoded_train = []
+    for i in range(1000):
+        image = train_test.train.images[i, :]
+        image = image.reshape([1, each_dim, each_dim, 1])
+        result = sess.run(y, {x:image})
+        encoded_train.append(result.flatten())
+    util.plot_tsne(np.array(encoded_train),train_test.train.labels[:1000],"tsne/"+sys.argv[1][:-4]+".png")
+'''
+'''
+if do_tsne:
+    train, labels = util.read_data_and_labels(which_data, each_dim)
+    x = tf.placeholder(tf.float32, [1, each_dim, each_dim, 1])
+    y = ae.encoder(x)
+    encoded_train = []
+    for i in range(1000):
+        image = train[i, :]
+        image = image.reshape([1, each_dim, each_dim, 1])
+        result = sess.run(y, {x:image})
+        encoded_train.append(result.flatten())
+    #print(labels[:1000])
+    util.plot_tsne(np.array(encoded_train),labels[:1000].reshape((1000,)),"tsne/"+sys.argv[1][:-4]+".png")
+'''
+if do_draw:
+    train, labels = util.read_data_and_labels(which_data, each_dim)
+    x = tf.placeholder(tf.float32, [1, each_dim, each_dim, 1])
+    y = ae.encoder(x)
+    encoded_train = []
+    for i in range(10):
+        image = train[i, :]
+        image = image.reshape([1, each_dim, each_dim, 1])
+        result = sess.run(y, {x:image})
+        encoded_train.append(result)
+    import pickle
+    pickle.dump( encoded_train, open("faces.p","wb") )
+    #util.plot_tsne(np.array(encoded_train),labels[:1000].reshape((1000,)),"tsne/"+sys.argv[1][:-4]+".png")
+else:
+    # Save deconv kernels as images.
+    f = ae.features()
+    dictionary = []
+    for idx in range(f.shape[-1]):
+        dictionary.append(f[:,:,0,idx])
+    plot_dictionary(dictionary, dictionary[0].shape, num_shown=int(np.sqrt(num_features))**2, row_length=int(np.sqrt(num_features)), filename="images/"+sys.argv[1]+"_dict.png")
 
-# Save recon images
-x = tf.placeholder(tf.float32, [1, each_dim, each_dim, 1])
-y = ae.reconstruct(x)
+    # Save recon images
+    x = tf.placeholder(tf.float32, [1, each_dim, each_dim, 1])
+    y = ae.reconstruct(x)
 
-decoded = []
-for i in range(20):
-  image = data[i, :]
-  image = image.reshape([1, each_dim, each_dim, 1])
-  result = sess.run(y, {x:image})
-  decoded.append(result[0,:,:,0])
-plot_reconstruction(data[:20,:], decoded, decoded[0].shape, 20)
+    decoded = []
+    for i in range(20):
+        image = data[i, :]
+        image = image.reshape([1, each_dim, each_dim, 1])
+        result = sess.run(y, {x:image})
+        decoded.append(result[0,:,:,0])
+    plot_reconstruction(data[:20,:], decoded, decoded[0].shape, 20,filename="images/"+sys.argv[1]+"_recon.png")
