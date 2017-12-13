@@ -167,7 +167,7 @@ else:
     dictionary = []
     for idx in range(f.shape[-1]):
         dictionary.append(f[:,:,0,idx])
-    plot_dictionary(dictionary[7:], dictionary[0].shape, num_shown=int(np.sqrt(num_features))**2, row_length=int(np.sqrt(num_features)), filename="images/"+sys.argv[1]+"_dict.png")
+    plot_dictionary(dictionary, dictionary[0].shape, num_shown=int(np.sqrt(num_features))**2, row_length=int(np.sqrt(num_features)), filename="images/"+sys.argv[1]+"_dict.png")
 
     # Save recon images
     x = tf.placeholder(tf.float32, [1, each_dim, each_dim, 1])
