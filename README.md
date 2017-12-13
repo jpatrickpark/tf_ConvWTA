@@ -1,5 +1,8 @@
-# tf_ConvWTA
+# tf_ConvWTA copyright (c) 2017 Inwan Yoo @iwyoo iwyoo@unist.ac.kr
 Tensorflow implementation of convolutional Winner-Take-All Autoencdoer [1].
+
+## Modification
+Jungkyu Park / https://github.com/jpatrickpark/tf_ConvWTA
 
 ## Usage
 ```python
@@ -40,3 +43,4 @@ ae.restore(save_path)
 
 ## Author
 Inwan Yoo / iwyoo@unist.ac.kr
+
