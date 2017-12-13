@@ -1,3 +1,7 @@
+'''
+The code does not recognize all data.
+Even if the code recognizes the data, the data is so fat that the program crashes.
+'''
 import tensorflow as tf
 import numpy as np
 from PIL import Image
